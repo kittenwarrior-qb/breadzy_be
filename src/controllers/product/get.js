@@ -4,11 +4,27 @@ import Product from "../../models/product.model.js";
 // GET /api/products
 export const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find().sort({ createdAt: -1 });
+    const { page = 1, search = "" } = req.query;
+    const pageSize = 10;
+    const query = search
+      ? { slug: { $regex: search, $options: "i" } }
+      : {};
+
+    const total = await Product.countDocuments(query);
+    const products = await Product.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * pageSize)
+      .limit(pageSize);
 
     return res.status(StatusCodes.OK).json({
       msg: "Lấy danh sách sản phẩm thành công",
       data: products,
+      pagination: {
+        total,
+        page: Number(page),
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
+      },
     });
   } catch (error) {
     console.error("Lỗi lấy sản phẩm:", error);

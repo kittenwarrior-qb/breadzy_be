@@ -18,11 +18,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(cookieParser());
 
-// ✅ Khắc phục __dirname khi dùng ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ✅ Serve thư mục /uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use("/api/products", productRoute);

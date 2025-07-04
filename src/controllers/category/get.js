@@ -4,11 +4,27 @@ import Category from "../../models/category.model.js";
 // GET /api/categories
 export const getAllCategories = async (req, res) => {
   try {
-    const categories = await Category.find().sort({ createdAt: -1 });
+    const { page = 1, search = "" } = req.query;
+    const pageSize = 10;
+    const query = search
+      ? { slug: { $regex: search, $options: "i" } }
+      : {};
+
+    const total = await Category.countDocuments(query);
+    const categories = await Category.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * pageSize)
+      .limit(pageSize);
 
     return res.status(StatusCodes.OK).json({
       msg: "Lấy danh sách danh mục thành công",
       data: categories,
+      pagination: {
+        total,
+        page: Number(page),
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
+      },
     });
   } catch (error) {
     console.error("Lỗi lấy danh sách danh mục:", error);
