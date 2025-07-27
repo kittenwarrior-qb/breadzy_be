@@ -1,44 +1,54 @@
 import { StatusCodes } from "http-status-codes";
 import Product from "../../models/product.model.js";
+import Category from "../../models/category.model.js";
+import slugify from "slugify";
 
 // PUT /api/products/:id
 export const updateProductById = async (req, res) => {
-  const updated = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  if (!updated) {
-    return res.status(StatusCodes.NOT_FOUND).json({ msg: "Không tìm thấy sản phẩm" });
-  }
-  res.status(StatusCodes.OK).json(updated);
-};
-
-// PUT /api/products/update-image/:id
-export const updateProductImage = async (req, res) => {
   try {
     const { id } = req.params;
+    const { name, description, category, isHot } = req.body;
 
-    if (!req.file) {
+    if (!name || !description || !category) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        msg: "Không tìm thấy file ảnh",
+        msg: "Thiếu tên, mô tả hoặc danh mục sản phẩm",
       });
     }
 
-    const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+    const trimmedName = name.trim();
+    const slug = slugify(trimmedName, { lower: true, strict: true });
 
-    const product = await Product.findById(id);
-    if (!product) {
+    const foundCategory = await Category.findOne({ slug: category });
+    if (!foundCategory) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        msg: "Danh mục không hợp lệ",
+      });
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      {
+        name: trimmedName,
+        description,
+        slug,
+        category: foundCategory.slug,
+        isHot: !!isHot,
+      },
+      { new: true }
+    );
+
+    if (!updatedProduct) {
       return res.status(StatusCodes.NOT_FOUND).json({
-        msg: "Không tìm thấy sản phẩm",
+        msg: "Không tìm thấy sản phẩm để cập nhật",
       });
     }
-
-    product.image = imageUrl;
-    await product.save();
 
     return res.status(StatusCodes.OK).json({
-      msg: "Cập nhật ảnh sản phẩm thành công",
-      data: product,
+      msg: "Cập nhật sản phẩm thành công",
+      data: updatedProduct,
     });
   } catch (error) {
-    console.error("Lỗi cập nhật ảnh sản phẩm:", error);
+    console.error("Lỗi cập nhật sản phẩm:", error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       msg: "Lỗi phía server",
     });

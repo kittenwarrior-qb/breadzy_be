@@ -15,20 +15,19 @@ const productSchema = new mongoose.Schema({
   description: {
     type: String,
   },
-  price: {
-    type: Number,
-    required: true,
-  },
-  image: {
-    type: String,
-  },
   category: {
     type: String,
+    required: true,
+  },
+  price: {
+    type: Number,
+    default: 0
   },
   isHot: {
     type: Boolean,
     default: false,
   },
+
   createdAt: {
     type: Date,
     default: Date.now,

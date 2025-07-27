@@ -1,21 +1,25 @@
 import Product from "../../models/product.model.js";
 import Category from "../../models/category.model.js";
 import { StatusCodes } from "http-status-codes";
+import slugify from "slugify";
 
-// POST /api/products (có ảnh)
 export const createProduct = async (req, res) => {
   try {
-    const {
-      name,
-      description,
-      price,
-      category, 
-      isHot,
-    } = req.body;
+    const { name, description, category, isHot } = req.body;
 
-    if (!name || !price || !category) {
+    if (!name || !category || !description) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        msg: "Thiếu tên, giá hoặc danh mục sản phẩm",
+        msg: "Thiếu tên, mô tả hoặc danh mục sản phẩm",
+      });
+    }
+
+    const trimmedName = name.trim();
+    const slug = slugify(trimmedName, { lower: true, strict: true });
+
+    const existing = await Product.findOne({ slug });
+    if (existing) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        msg: "Tên sản phẩm đã tồn tại",
       });
     }
 
@@ -26,18 +30,13 @@ export const createProduct = async (req, res) => {
       });
     }
 
-    let image = "";
-    if (req.file) {
-      image = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
-    }
-
     const product = await Product.create({
-      name,
+      name: trimmedName,
       description,
-      price,
-      image,
-      category: foundCategory.slug, 
-      isHot,
+      slug,
+      price: 0, // Sẽ lấy từ variant sau
+      category: foundCategory.slug,
+      isHot: !!isHot,
     });
 
     return res.status(StatusCodes.CREATED).json({

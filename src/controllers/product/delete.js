@@ -13,6 +13,6 @@ export const deleteProductById = async (req, res) => {
   }
 
   res.status(StatusCodes.OK).json({
-    msg: 'Đã xoá sản phẩm thành công',
+    msg: 'Xoá sản phẩm thành công',
   });
 };

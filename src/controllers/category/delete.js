@@ -8,14 +8,8 @@ export const deleteCategoryById = async (req, res) => {
 
     const deleted = await Category.findByIdAndDelete(id);
 
-    if (!deleted) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        msg: "Không tìm thấy danh mục để xoá",
-      });
-    }
-
     return res.status(StatusCodes.OK).json({
-      msg: "Đã xoá danh mục thành công",
+      msg: "Xoá danh mục thành công",
     });
   } catch (error) {
     console.error("Lỗi xoá danh mục:", error);
