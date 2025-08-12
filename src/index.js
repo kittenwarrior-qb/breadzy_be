@@ -20,8 +20,8 @@ app.use(express.urlencoded({ extended: true }));
 // app.use(cors());
 
 app.use(cors({
-  origin: 'http://localhost:3000', // CHỈ ĐỊNH rõ origin
-  credentials: true,               // Cho phép gửi cookie, header Authorization
+  origin: 'http://localhost:3000',
+  credentials: true,               
 }));
 
 app.use(cookieParser());
